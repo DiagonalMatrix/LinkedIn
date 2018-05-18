@@ -6,7 +6,7 @@ from links import linkedin_urls,linkedin_degrees_second , linkedin_degrees_third
 from config import li_username, li_password,chrome_driver_path
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from validate_email import validate_email
+import re
 driver = webdriver.Chrome(executable_path=chrome_driver_path)
 
 driver.get("https://www.linkedin.com/")
@@ -18,13 +18,13 @@ driver.find_element_by_id('login-submit').click()
 class connect():
 
     def search_results(self,url):
-
+        
         try:
             url = url.replace(',', '%2C')
         except:
                 pass
         try:
-            url = url.replace('&', ' %26')
+            url = url.replace('&', '%26')
         except:
             pass
         linkedin_handle = url
@@ -41,10 +41,39 @@ class connect():
             
         except:
             print('ERROR: Invalid URL:' + url)
+            time.sleep(100)
+            print(driver.current_url)
             pass
 
     @staticmethod
     def total_results(results):
+            if results == 0:
+              count = 1	
+              while(count):
+                try:
+                    time.sleep(10)
+                    url = driver.current_url
+                    # driver.get(url)
+                    total_search_results = []
+                    total_search_results = driver.find_elements_by_class_name("actor-name")
+                    print("Total search results")
+                    print(len(total_search_results))
+                    if len(total_search_results)>0:
+                        count = 0
+                        connect.total_results(len(total_search_results))
+                    else:
+                        count = 1
+                except:
+                    time.sleep(10)
+                    url = driver.current_url
+                    # driver.get(url)
+                    total_search_results = []
+                    total_search_results = driver.find_elements_by_class_name("actor-name")
+                    print("Total search results")
+                    print(len(total_search_results))
+                    connect.total_results(len(total_search_results))
+
+
             if results == 1:
                 try:
                     driver.execute_script('document.getElementsByClassName("name actor-name")[0].click();')
@@ -80,32 +109,50 @@ class connect():
                     print(e)
             
             if results > 1:
-                try:
-                    name = WebDriverWait(driver, 50).until(
-                        EC.presence_of_element_located((By.CLASS_NAME, "pv-top-card-section__name"))
-                    )
-                    print("Name of person")
-                    print(name.text)
-                except Exception as e:
+                count = 1
+                while (count):
+                    try:
+                        time.sleep(15)
+                        url = driver.current_url
+                        # driver.get(url)
+                        total_search_results = []
+                        total_search_results = driver.find_elements_by_class_name("actor-name")
+                        print("Total search results")
+                        print(len(total_search_results))
+                        if len(total_search_results) == 1:
+                            count = 0
+                            connect.total_results(len(total_search_results))
+                        else:
+                            count = 1
+                    except Exception as e:
+                        print(e)
+
+                # try:
+                #     name = WebDriverWait(driver, 150).until(
+                #         EC.presence_of_element_located((By.CLASS_NAME, "pv-top-card-section__name"))
+                #     )
+                #     print("Name of person")
+                #     print(name.text)
+                # except Exception as e:
                     
-                    print("Refreshing")
-                    driver.find_element_by_name("s").sendKeys(Keys.F5)
+                #     print("Refreshing")
+                #     driver.find_element_by_name("s").sendKeys(Keys.F5)
                     
-                   # driver.refresh()
-                    name = WebDriverWait(driver, 50).until(
-                            EC.presence_of_element_located((By.CLASS_NAME, "pv-top-card-section__name"))
-                        )
-                    print("Name of person")
-                    print(name.text) 
-                try:
-                    degree = WebDriverWait(driver, 50).until(
-                        EC.presence_of_element_located((By.CLASS_NAME, "dist-value"))
-                    )
-                    print("Degree of connection")
-                    print(degree.text)
-                    connect.degree_of_connection(degree.text,name)
-                except Exception as e:
-                    print(e)
+                #    # driver.refresh()
+                #     name = WebDriverWait(driver, 50).until(
+                #             EC.presence_of_element_located((By.CLASS_NAME, "pv-top-card-section__name"))
+                #         )
+                #     print("Name of person")
+                #     print(name.text) 
+                # try:
+                #     degree = WebDriverWait(driver, 50).until(
+                #         EC.presence_of_element_located((By.CLASS_NAME, "dist-value"))
+                #     )
+                #     print("Degree of connection")
+                #     print(degree.text)
+                #     connect.degree_of_connection(degree.text,name)
+                # except Exception as e:
+                #     print(e)
                
 
     @staticmethod
@@ -246,14 +293,27 @@ class connect():
                             print("email")
                             # validate_email('example@example.com')
                             while True:
-                                print("waitting")
-                                is_valid=WebDriverWait(driver, 300).until(lambda driver: validate_email(driver.find_element_by_id("email").get_attribute("value")))
-                                print("Waiting")
-                                time.sleep(10)
+                                addressToVerify = driver.find_element_by_id("email").get_attribute("value")
+                                match = re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$', addressToVerify)
+                                if match == None:
+                                	continue
+                                else:
+                                	time.sleep(10)
+                                	addressToVerify = driver.find_element_by_id("email").get_attribute("value")
+                                	match = re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$', addressToVerify)
+                                	if match == None:
+                                		continue
+                                	else:
+                                		break
 
-                                if is_valid == True:
-                                    time.sleep(5)
-                                    break
+                                # print("waitting")
+                                # is_valid=WebDriverWait(driver, 300).until(lambda driver: validate_email(driver.find_element_by_id("email").get_attribute("value")))
+                                # print("Waiting")
+                                # time.sleep(15)
+
+                                # if is_valid == True:
+                                #     time.sleep(5)
+                                #     break
 
                             print("Email_correct")
                             driver.execute_script(
@@ -269,7 +329,8 @@ class connect():
 
             else:
                         print("Profile have less than 100 connections so it may be fake")
-
+        if degree == "1st":
+            print("You may be already connected with this person")
 
 for url in linkedin_urls:
     cn = connect()
