@@ -1,1 +1,2 @@
-selenium==3.0.1
+selenium==3.12.0
+validate-email==1.3

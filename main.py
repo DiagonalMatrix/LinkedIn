@@ -6,7 +6,7 @@ from links import linkedin_urls,linkedin_degrees_second , linkedin_degrees_third
 from config import li_username, li_password,chrome_driver_path
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-
+from validate_email import validate_email
 driver = webdriver.Chrome(executable_path=chrome_driver_path)
 
 driver.get("https://www.linkedin.com/")
@@ -244,8 +244,17 @@ class connect():
                            
                             email = driver.find_element_by_id('email')
                             print("email")
-                           
-                            WebDriverWait(driver, 50).until(lambda driver: len(driver.find_element_by_id("email").get_attribute("value")) > 20)
+                            # validate_email('example@example.com')
+                            while True:
+                                print("waitting")
+                                is_valid=WebDriverWait(driver, 300).until(lambda driver: validate_email(driver.find_element_by_id("email").get_attribute("value")))
+                                print("Waiting")
+                                time.sleep(10)
+
+                                if is_valid == True:
+                                    time.sleep(5)
+                                    break
+
                             print("Email_correct")
                             driver.execute_script(
                                 "document.getElementsByClassName('button-secondary-large-muted mr1')[0].click();")
